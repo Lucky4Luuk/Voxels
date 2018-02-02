@@ -12,7 +12,40 @@ function lib.new(x,z,t)
       for iy=1, chunk_size do
         chunk.voxels[ix][iy] = {}
         for iz=1, chunk_size do
-          chunk.voxels[ix][iy][iz] = 1
+          chunk.voxels[ix][iy][iz] = {exists=1, color={1,0.2,0.2}}
+        end
+      end
+    end
+  elseif t == "perlin" then
+    for ix=1, chunk_size do
+      chunk.voxels[ix] = {}
+      for iy=1, chunk_size do
+        chunk.voxels[ix][iy] = {}
+        for iz=1, chunk_size do
+          chunk.voxels[ix][iy][iz] = {exists=0}
+        end
+      end
+    end
+    for ix=1, chunk_size do
+      for iz=1, chunk_size do
+        local n = math.max(perlin:noise(ix,0.3,iz),0.3)
+        for iy=1, math.floor(n*chunk_size) do
+          chunk.voxels[ix][iy][iz] = {exists=1, color={0.3,0.8,0.15}}
+        end
+      end
+    end
+  elseif t == "flat" then
+    for ix=1, chunk_size do
+      chunk.voxels[ix] = {}
+      for iy=1, chunk_size do
+        chunk.voxels[ix][iy] = {}
+        for iz=1, chunk_size do
+          chunk.voxels[ix][iy][iz] = {exists=0}
+          if iy < 9 then
+            chunk.voxels[ix][iy][iz] = {exists=1, color={0.3,0.8,0.15}}
+          elseif iy < 12 then
+            chunk.voxels[ix][iy][iz] = {exists=1, color={0.3,0.4,0.15}}
+          end
         end
       end
     end
@@ -22,7 +55,7 @@ function lib.new(x,z,t)
       for iy=1, chunk_size do
         chunk.voxels[ix][iy] = {}
         for iz=1, chunk_size do
-          chunk.voxels[ix][iy][iz] = 0
+          chunk.voxels[ix][iy][iz] = {exists=0}
         end
       end
     end

@@ -13,9 +13,9 @@ int getVoxel(vec3 pos)
 {
   vec3 p = pos - vec3(chunk_pos.x,0.0,chunk_pos.y);
 
-  if (p.x >= 0.0 && p.x < chunk_size && p.y >= 0.0 && p.y < chunk_size && p.z >= 0.0 && p.z < chunk_size)
+  if (p.x > 0.0 && p.x < chunk_size && p.y > 0.0 && p.y < chunk_size && p.z > 0.0 && p.z < chunk_size)
   {
-    vec2 uv = vec2(floor(p.x), floor(p.y) + floor(p.z * chunk_size)) / chunk_size;
+    vec2 uv = vec2(p.x, p.y + p.z * chunk_size) / chunk_size;
     if (Texel(chunk, uv).r == 1.0) return 1;
   }
 
@@ -28,7 +28,7 @@ vec3 castRay(vec3 pos, vec3 dir)
 
   for (int i = 0; i < SAMPLES; i++)
   {
-    vec3 p = pos + dir * i * voxel_size;
+    vec3 p = floor(pos + dir * i);
 
     if (getVoxel(p) == 1)
     {
