@@ -6,12 +6,12 @@ uniform float voxel_size;
 uniform float chunk_size;
 uniform vec2 chunk_pos;
 
-#define PI 3.14159265359;
-#define SAMPLES 64;
+#define PI 3.14159265359
+#define SAMPLES 64
 
 int getVoxel(vec3 pos)
 {
-  vec3 p = pos + vec3(chunk_size/2.0) - vec3(chunk_pos.x,0.0,chunk_pos.y);
+  vec3 p = pos - vec3(chunk_pos.x,0.0,chunk_pos.y);
 
   if (p.x >= 0.0 && p.x < chunk_size && p.y >= 0.0 && p.y < chunk_size && p.z >= 0.0 && p.z < chunk_size)
   {
@@ -28,11 +28,11 @@ vec3 castRay(vec3 pos, vec3 dir)
 
   for (int i = 0; i < SAMPLES; i++)
   {
-    vec3 p = pos + dir * i;
+    vec3 p = pos + dir * i * voxel_size;
 
     if (getVoxel(p) == 1)
     {
-      col = vec3(1.0);
+      col = vec3(i / 64.0);
       break;
     }
   }
