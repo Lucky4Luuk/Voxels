@@ -7,12 +7,12 @@ local shader = nil
 local cam_pos = {x=0,y=0,z=-3}
 local cam_rot = {x=0,y=0,z=0}
 local fov = 90
-local voxel_size = 4/64
+local voxel_size = 1/64
 
 local totalTime = 0
 local timestep = 1/60
 
-local mode = "cpu"
+local mode = "gpu"
 
 function love.load()
   perlin:load()
@@ -35,11 +35,11 @@ end
 function FixedUpdate()
   local ry = cam_rot.y / 180 * math.pi
   if love.keyboard.isDown("d") then
-    cam_pos.x = cam_pos.x - math.sin(-ry-math.pi/2)*timestep*5
-    cam_pos.z = cam_pos.z + math.cos(-ry-math.pi/2)*timestep*5
+    cam_pos.x = cam_pos.x + math.sin(ry-math.pi/2)*timestep*5
+    cam_pos.z = cam_pos.z - math.cos(ry-math.pi/2)*timestep*5
   elseif love.keyboard.isDown("a") then
-    cam_pos.x = cam_pos.x + math.sin(-ry-math.pi/2)*timestep*5
-    cam_pos.z = cam_pos.z - math.cos(-ry-math.pi/2)*timestep*5
+    cam_pos.x = cam_pos.x - math.sin(ry-math.pi/2)*timestep*5
+    cam_pos.z = cam_pos.z + math.cos(ry-math.pi/2)*timestep*5
   end
 
   if love.keyboard.isDown("e") then
@@ -49,11 +49,11 @@ function FixedUpdate()
   end
 
   if love.keyboard.isDown("w") then
-    cam_pos.x = cam_pos.x - math.sin(-ry)*timestep*5
-    cam_pos.z = cam_pos.z + math.cos(-ry)*timestep*5
+    cam_pos.x = cam_pos.x + math.sin(ry-math.pi)*timestep*5
+    cam_pos.z = cam_pos.z - math.cos(ry-math.pi)*timestep*5
   elseif love.keyboard.isDown("s") then
-    cam_pos.x = cam_pos.x + math.sin(-ry)*timestep*5
-    cam_pos.z = cam_pos.z - math.cos(-ry)*timestep*5
+    cam_pos.x = cam_pos.x - math.sin(ry-math.pi)*timestep*5
+    cam_pos.z = cam_pos.z + math.cos(ry-math.pi)*timestep*5
   end
 
   if love.keyboard.isDown("right") then
@@ -105,47 +105,17 @@ function love.draw()
       love.graphics.setShader()
     else
       -- Software rendering
-      for x=1, #chunks[i].voxels do
-        for y=1, #chunks[i].voxels[x] do
-          for z=1, #chunks[i].voxels[x][y] do
-            if chunks[i].voxels[x][y][z].exists == 1 then
-              local next_to_air = false
-              if x == 1 or x == #chunks[i].voxels or y == 1 or y == #chunks[i].voxels[x] or z == 1 or z == #chunks[i].voxels[x][y] then next_to_air = true end
-              if next_to_air == false and (chunks[i].voxels[x-1][y][z].exists == 0 or chunks[i].voxels[x+1][y][z].exists == 0 or chunks[i].voxels[x][y-1][z].exists == 0 or chunks[i].voxels[x][y+1][z].exists == 0 or chunks[i].voxels[x][y][z-1].exists == 0 or chunks[i].voxels[x][y][z+1].exists == 0) then next_to_air = true end
-              if next_to_air then
-                local nx = (x - cam_pos.x)
-                local ny = (y - cam_pos.y)
-                local nz = (z - cam_pos.z)
-
-                local cam_rot_y = cam_rot.y / 180 * math.pi
-
-                local rx = nx * math.cos(cam_rot_y) - nz * math.sin(cam_rot_y)
-                local rz = nz * math.cos(cam_rot_y) + nx * math.sin(cam_rot_y)
-
-                local cx = rx * 50
-                local cy = ny * 50
-                local cz = rz / 5
-
-                if cz > 0 then
-                  local sx = cx / cz + love.graphics.getWidth()/2
-                  local sy = -cy / cz + love.graphics.getHeight()/2
-                  local size = 80/cz
-                  if sx >= -size and sx <= love.graphics.getWidth()+size and sy >= -size and sy <= love.graphics.getHeight()+size then
-                    love.graphics.setColor(chunks[i].voxels[x][y][z].color)
-                    love.graphics.rectangle("fill", sx-size/2,sy-size/2, size, size)
-                    vox_count = vox_count + 1
-                  end
-                end
-              end
-            end
-          end
-        end
-      end
     end
   end
 
   love.graphics.setColor(1,1,1,1)
-  love.graphics.print("Voxels being drawn: "..tostring(vox_count),0,0)
-  love.graphics.print("MS: "..tostring(love.timer.getDelta())*1000,0,12)
-  love.graphics.print("FPS: "..tostring(love.timer.getFPS()),0,24)
+  local dy = 0
+  if mode == "cpu" then
+    love.graphics.print("Voxels being drawn: "..tostring(vox_count),0,dy)
+    dy = dy + 12
+  end
+  love.graphics.print("MS: "..tostring(love.timer.getDelta())*1000,0,dy)
+  dy = dy + 12
+  love.graphics.print("FPS: "..tostring(love.timer.getFPS()),0,dy)
+  dy = dy + 12
 end
