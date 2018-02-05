@@ -7,7 +7,7 @@ local shader = nil
 local cam_pos = {x=0,y=0,z=-3}
 local cam_rot = {x=0,y=0,z=0}
 local fov = 90
-local voxel_size = 1/64
+local voxel_size = 1
 
 local totalTime = 0
 local timestep = 1/60
@@ -17,13 +17,25 @@ local mode = "gpu"
 function love.load()
   perlin:load()
   shader = love.graphics.newShader("shaders/fragment.glsl")
-  for x=-0, 1 do
-    for z=-0, 1 do
-      local c = chunk.new(x*64,z*64,"flat")
+  for x=-2, 2 do
+    for z=-2, 2 do
+      local c = chunk.new(x,z,"flat")
+      if x == z and x == 0 then
+        c = chunk.new(x,z,"test")
+      end
       c:generate_texture()
+      --c:save_texture() --broken rn
       table.insert(chunks, c)
     end
   end
+
+  print(tostring(#chunks).." chunks generated!")
+
+  local now = love.timer.getTime()
+  chunks[1]:generate_texture()
+  local dif = love.timer.getTime() - now
+
+  print("It took "..tostring(math.floor(dif*10000)/10).." ms to generate the texture for 1 chunk!")
 end
 
 function send(shader, name, value)
@@ -89,7 +101,7 @@ function love.update(dt)
 end
 
 function sort_chunks(a,b)
-  return a.dtc < b.dtc
+  return a.dtc > b.dtc
 end
 
 function love.draw()
